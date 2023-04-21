@@ -1,4 +1,4 @@
-This is a react wortkshop from Software University.
+This is a react workshop from Software University.
 
 Server, html, and css are provided by SoftUni. 
 
