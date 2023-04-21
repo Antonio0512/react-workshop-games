@@ -1,0 +1,18 @@
+footer {
+    position: fixed;
+    background-color: #29303c;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    color: white;
+    text-align: center;
+    overflow: hidden;
+}
+
+footer div{
+    padding-top: 0.6em;
+}
+
+footer div p {
+    font-size: 1.3em;
+}
