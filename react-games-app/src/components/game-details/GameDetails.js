@@ -1,26 +1,28 @@
 import { useParams } from "react-router-dom";
-import { getOne } from "../../services/GameService";
-import { commentCreate } from "../../services/CommentsService";
+import * as gameService from "../../services/GameService";
 import { useEffect, useState } from "react";
+
 export const GameDetails = () => {
     const [username, setUsername] = useState("");
     const [comment, setComment] = useState("");
-    const gameId = useParams();
     const [game, setGame] = useState({});
+    const gameId = useParams();
 
     useEffect(() => {
-        getOne(gameId).then((result) => {
+        gameService.getOne(gameId).then((result) => {
             setGame(result);
         });
     }, [gameId]);
 
-    const onCommentSubmit = (e) => {
+    const onCommentSubmit = async (e) => {
         e.preventDefault();
-        commentCreate({
-            ...gameId,
+
+        const result = await gameService.addComment(gameId, {
             username,
             comment,
         });
+
+        setGame(state => ({...state, comments: {...state.comments, result }}))
         setUsername("");
         setComment("");
     };
@@ -31,7 +33,7 @@ export const GameDetails = () => {
             <div className="info-section">
                 <div className="game-header">
                     <img className="game-img" src={game.imageUrl} />
-                    <h1>Bright</h1>
+                    <h1>{game.title}</h1>
                     <span className="levels">MaxLevel: {game.maxLevel}</span>
                     <p className="type">{game.category}</p>
                 </div>
@@ -42,16 +44,18 @@ export const GameDetails = () => {
                 <div className="details-comments">
                     <h2>Comments:</h2>
                     <ul>
-                        {/* <!-- list all comments for current game (If any) --> */}
-                        <li className="comment">
-                            <p>Content: I rate this one quite highly.</p>
-                        </li>
-                        <li className="comment">
-                            <p>Content: The best game.</p>
-                        </li>
+                        {game.comments && Object.values(game.comments).map((x) => (
+                            <li key={x._id} className="comment">
+                                <p>
+                                    {x.username}: {x.comment}
+                                </p>
+                            </li>
+                        ))}
                     </ul>
-                    {/* <!-- Display paragraph: If there are no games in the database --> */}
-                    <p className="no-comment">No comments.</p>
+
+                    {!game.comments && (
+                        <p className="no-comment">No comments.</p>
+                    )}
                 </div>
 
                 {/* <!-- Edit/Delete buttons ( Only for creator of this game )  --> */}

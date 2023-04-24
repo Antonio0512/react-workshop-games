@@ -1,7 +1,6 @@
 const BASE_URL = "http://localhost:3030/jsonstore/comments";
 
 export const commentCreate = async (data) => {
-
     const options = {
         method: "POST",
         headers: {
@@ -16,10 +15,14 @@ export const commentCreate = async (data) => {
     return result;
 };
 
-
-export const getCommentsForGame = async (gameId) => {
-    const response = await fetch(BASE_URL + gameId)
-    const result = await response.json()
-
-    return result
-}
+export const getCommentsForGame = async ({ gameId }) => {
+    const query = encodeURIComponent(`gameId="${gameId}"`);
+    const response = await fetch(`${BASE_URL}?where=${query}`);
+    try {
+        const result = await response.json();
+        const comments = Object.values(result);
+        return comments;
+    } catch (err) {
+        return []
+    } 
+};

@@ -25,11 +25,10 @@ function App() {
     }, []);
 
     const onCreateSubmitHandler = async (data) => {
-        const newGame = await gameService.create(data);
-
-        setGames((state) => [...state, newGame]);
-
-        navigate("/catalogue");
+        await gameService.create(data).then((newGame) => {
+            setGames((state) => [...state, newGame]);
+            navigate("/catalogue");
+        });
     };
 
     return (
