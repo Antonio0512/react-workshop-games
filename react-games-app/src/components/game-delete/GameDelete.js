@@ -3,12 +3,12 @@ import { GameContext } from "../../contexts/GameContext";
 import { useForm } from "../../hooks/useForm";
 import { useParams } from "react-router-dom";
 
-export const GameEdit = () => {
-    const { gameEdit, games, token } = useContext(GameContext);
+export const GameDelete = () => {
+    const { gameDelete, games, token } = useContext(GameContext);
     const { gameId } = useParams();
     const game = games.find((g) => g._id === gameId);
     const { values, onChangeHandler, onSubmit } = useForm(
-        () => gameEdit(token, gameId, values),
+        () => gameDelete(token, gameId, values),
         {
             _id: gameId,
             title: game.title || "",
@@ -21,9 +21,9 @@ export const GameEdit = () => {
 
     return (
         <section id="edit-page" className="auth">
-            <form id="edit" method="POST" onSubmit={onSubmit}>
+            <form id="edit" onSubmit={onSubmit}>
                 <div className="container">
-                    <h1>Edit Game</h1>
+                    <h1>Delete Game</h1>
                     <label htmlFor="leg-title">Legendary title:</label>
                     <input
                         type="text"
@@ -31,6 +31,7 @@ export const GameEdit = () => {
                         name="title"
                         value={values.title}
                         onChange={onChangeHandler}
+                        disabled
                     />
 
                     <label htmlFor="category">Category:</label>
@@ -40,6 +41,7 @@ export const GameEdit = () => {
                         name="category"
                         value={values.category}
                         onChange={onChangeHandler}
+                        disabled
                     />
 
                     <label htmlFor="levels">MaxLevel:</label>
@@ -50,6 +52,7 @@ export const GameEdit = () => {
                         value={values.maxLevel}
                         min="1"
                         onChange={onChangeHandler}
+                        disabled
                     />
 
                     <label htmlFor="game-img">Image:</label>
@@ -59,6 +62,7 @@ export const GameEdit = () => {
                         name="imageUrl"
                         value={values.imageUrl}
                         onChange={onChangeHandler}
+                        disabled
                     />
 
                     <label htmlFor="summary">Summary:</label>
@@ -67,8 +71,9 @@ export const GameEdit = () => {
                         value={values.summary}
                         id="summary"
                         onChange={onChangeHandler}
+                        disabled
                     ></textarea>
-                    <input className="btn submit" type="submit" value="Edit Game" />
+                    <input className="btn submit" type="submit" value="Delete Game" />
                 </div>
             </form>
         </section>

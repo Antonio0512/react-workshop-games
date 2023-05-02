@@ -1,12 +1,15 @@
-import { useParams } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
+
+import { Link, useParams } from "react-router-dom";
+
+import { GameContext } from "../../contexts/GameContext";
 import * as gameService from "../../services/GameService";
-import { useEffect, useState } from "react";
+import { useForm } from "../../hooks/useForm";
 
 export const GameDetails = () => {
-    const [username, setUsername] = useState("");
-    const [comment, setComment] = useState("");
     const [game, setGame] = useState({});
-    const gameId = useParams();
+    const { token } = useContext(GameContext);
+    const {gameId} = useParams();
 
     useEffect(() => {
         gameService.getOne(gameId).then((result) => {
@@ -14,17 +17,35 @@ export const GameDetails = () => {
         });
     }, [gameId]);
 
-    const onCommentSubmit = async (e) => {
-        e.preventDefault();
+    useEffect(() => {
+        gameService
+            .getComments(gameId)
+            .then((result) => {
+                setGame((state) => ({ ...state, comments: result }));
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }, [gameId]);
 
-        const result = await gameService.addComment(gameId, {
-            username,
-            comment,
-        });
+    const { values, onChangeHandler, onSubmit } = useForm(
+        () => onCommentSubmit(values),
+        { username: "", comment: "" }
+    );
 
-        setGame(state => ({...state, comments: {...state.comments, result }}))
-        setUsername("");
-        setComment("");
+    const onCommentSubmit = async () => {
+        const username = values.username;
+        const comment = values.comment;
+
+        try {
+            const result = await gameService.addComment(token, {
+                username,
+                comment,
+            });
+            setGame((state) => ({ ...state, comments: [...state.comments, result] }));
+        } catch (err) {
+            console.log(err);
+        }
     };
 
     return (
@@ -32,7 +53,7 @@ export const GameDetails = () => {
             <h1>Game Details</h1>
             <div className="info-section">
                 <div className="game-header">
-                    <img className="game-img" src={game.imageUrl} />
+                    <img className="game-img" src={game.imageUrl} alt={game.title} />
                     <h1>{game.title}</h1>
                     <span className="levels">MaxLevel: {game.maxLevel}</span>
                     <p className="type">{game.category}</p>
@@ -44,47 +65,47 @@ export const GameDetails = () => {
                 <div className="details-comments">
                     <h2>Comments:</h2>
                     <ul>
-                        {game.comments && Object.values(game.comments).map((x) => (
-                            <li key={x._id} className="comment">
-                                <p>
-                                    {x.username}: {x.comment}
-                                </p>
-                            </li>
-                        ))}
+                        {game.comments &&
+                            Object.values(game.comments).map((x) => (
+                                <li key={x._id} className="comment">
+                                    <p>
+                                        {x.username}: {x.comment}
+                                    </p>
+                                </li>
+                            ))}
                     </ul>
 
-                    {!game.comments && (
-                        <p className="no-comment">No comments.</p>
-                    )}
+                    {!game.comments && <p className="no-comment">No comments.</p>}
                 </div>
 
                 {/* <!-- Edit/Delete buttons ( Only for creator of this game )  --> */}
+            
                 <div className="buttons">
-                    <a href="#" className="button">
+                    <Link to={`/catalogue/${gameId}/edit`} className="button">
                         Edit
-                    </a>
-                    <a href="#" className="button">
+                    </Link>
+                    <Link to={`/catalogue/${gameId}/delete`} className="button">
                         Delete
-                    </a>
+                    </Link>
                 </div>
             </div>
 
             {/* <!-- Add Comment ( Only for logged-in users, which is not creators of the current game ) --> */}
             <article className="create-comment">
                 <label>Add new comment:</label>
-                <form className="form" onSubmit={onCommentSubmit}>
+                <form className="form" onSubmit={onSubmit}>
                     <input
                         type="text"
                         name="username"
                         placeholder="Username..."
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        value={values["username"]}
+                        onChange={onChangeHandler}
                     />
                     <textarea
                         name="comment"
                         placeholder="Comment..."
-                        value={comment}
-                        onChange={(e) => setComment(e.target.value)}
+                        value={values["comment"]}
+                        onChange={onChangeHandler}
                     ></textarea>
                     <input className="btn submit" type="submit" value="Add Comment" />
                 </form>

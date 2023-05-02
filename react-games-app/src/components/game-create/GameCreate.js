@@ -1,25 +1,18 @@
-import { useState } from "react";
+import { useContext } from "react";
 
-export const GameCreate = ({ onCreateGameSubmit }) => {
-    const [values, setValues] = useState({
+import { GameContext } from "../../contexts/GameContext";
+import { useForm } from "../../hooks/useForm";
+
+
+export const GameCreate = () => {
+    const { gameAdd, token } = useContext(GameContext)
+    const { values, onChangeHandler, onSubmit } = useForm(() => gameAdd(values, token), {
         title: "",
         category: "",
         maxLevel: "",
         imageUrl: "",
         summary: "",
     });
-
-    const onChangeHandler = (e) => {
-        setValues((state) => ({
-            ...state, [e.target.name]: e.target.value
-        }));
-    };
-
-    const onSubmit = (e) => {
-        e.preventDefault();
-
-        onCreateGameSubmit(values)
-    }
 
     return (
         <section id="create-page" className="auth">

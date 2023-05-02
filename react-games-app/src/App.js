@@ -3,22 +3,27 @@ import { Route, Routes, useNavigate } from "react-router-dom";
 
 import * as gameService from "./services/GameService";
 import * as authService from "./services/AuthService";
+
 import { AuthContext } from "./contexts/AuthContext";
+import { GameContext } from "./contexts/GameContext";
 
 import { Catalogue } from "./components/catalogue/Catalogue";
 import { Footer } from "./components/footer/Footer";
 import { GameCreate } from "./components/game-create/GameCreate";
 import { GameDetails } from "./components/game-details/GameDetails";
 import { GameEdit } from "./components/game-edit/GameEdit";
+import { GameDelete } from "./components/game-delete/GameDelete";
 import { Header } from "./components/header/Header";
 import { Homepage } from "./components/homepage/Homepage";
 import { Login } from "./components/login/Login";
 import { Register } from "./components/register/Register";
+import { Logout } from "./components/logout/Logout";
+import { useLocalStorage } from "./hooks/useLocalStorage";
 
 function App() {
     const navigate = useNavigate();
     const [games, setGames] = useState([]);
-    const [auth, setAuth] = useState({});
+    const [auth, setAuth] = useLocalStorage("auth", {});
 
     useEffect(() => {
         gameService.getAll().then((result) => {
@@ -26,11 +31,28 @@ function App() {
         });
     }, []);
 
-    const onCreateSubmitHandler = async (data) => {
-        await gameService.create(data).then((newGame) => {
+    const gameAdd = async (data, token) => {
+        await gameService.create(data, token).then((newGame) => {
             setGames((state) => [...state, newGame]);
+
             navigate("/catalogue");
         });
+    };
+
+    const gameEdit = async (token, gameId, data) => {
+        await gameService.edit(token, gameId, data);
+
+        setGames((state) => [...state]);
+
+        navigate(`/catalogue/${gameId}`);
+    };
+
+    const gameDelete = async (token, gameId) => {
+        await gameService.deleteGame(token, gameId);
+
+        setGames((state) => state.filter(x => x._id !== gameId));
+
+        navigate(`/catalogue`)
     };
 
     const onLoginSubmit = async (data, setIsLoginFailed) => {
@@ -57,38 +79,52 @@ function App() {
         }
     };
 
-    const contextData = {
+    const onLogout = async () => {
+        setAuth({});
+    };
+
+    const authContextData = {
         onRegisterSubmit,
         onLoginSubmit,
-        userId: auth._id,
+        onLogout,
         token: auth.accessToken,
+        userId: auth._id,
         userEmail: auth.email,
         isAuthenticated: !!auth.accessToken,
     };
 
+    const gameContextData = {
+        token: auth.accessToken,
+        games,
+        gameAdd,
+        gameEdit,
+        gameDelete
+    };
+
     return (
-        <AuthContext.Provider value={contextData}>
+        <AuthContext.Provider value={authContextData}>
             <div id="box">
                 <Header />
-
                 <main id="main-content">
-                    <Routes>
-                        <Route path="/" element={<Homepage />} />
-                        <Route
-                            path="/game-create"
-                            element={
-                                <GameCreate onCreateGameSubmit={onCreateSubmitHandler} />
-                            }
-                        />
-                        <Route path="/game-edit" element={<GameEdit />} />
-                        <Route
-                            path="/login"
-                            element={<Login onLoginSubmit={onLoginSubmit} />}
-                        />
-                        <Route path="/register" element={<Register />} />
-                        <Route path="/catalogue" element={<Catalogue games={games} />} />
-                        <Route path="/catalogue/:gameId" element={<GameDetails />} />
-                    </Routes>
+                    <GameContext.Provider value={gameContextData}>
+                        <Routes>
+                            <Route path="/" element={<Homepage />} />
+                            <Route path="/game-create" element={<GameCreate />} />
+                            <Route path="/catalogue/:gameId/edit" element={<GameEdit />} />
+                            <Route
+                                path="/catalogue/:gameId/delete"
+                                element={<GameDelete />}
+                            />
+                            <Route path="/logout" element={<Logout />} />
+                            <Route
+                                path="/login"
+                                element={<Login onLoginSubmit={onLoginSubmit} />}
+                            />
+                            <Route path="/register" element={<Register />} />
+                            <Route path="/catalogue" element={<Catalogue />} />
+                            <Route path="/catalogue/:gameId" element={<GameDetails />} />
+                        </Routes>
+                    </GameContext.Provider>
                 </main>
 
                 <Footer />
