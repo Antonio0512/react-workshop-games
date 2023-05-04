@@ -46,7 +46,7 @@ export const GameProvider = ({ children }) => {
     };
 
     const gameContextData = {
-        token: token,
+        token,
         games,
         gameAdd,
         gameEdit,

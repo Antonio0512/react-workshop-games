@@ -1,5 +1,4 @@
-import { Route, Routes,  } from "react-router-dom";
-
+import { Route, Routes } from "react-router-dom";
 
 import { AuthProvider } from "./contexts/AuthContext";
 import { GameProvider } from "./contexts/GameContext";
@@ -15,9 +14,9 @@ import { Homepage } from "./components/homepage/Homepage";
 import { Login } from "./components/login/Login";
 import { Register } from "./components/register/Register";
 import { Logout } from "./components/logout/Logout";
+import { RouteGuard } from "./common/RouteGuard";
 
 function App() {
-
     return (
         <AuthProvider>
             <div id="box">
@@ -26,20 +25,17 @@ function App() {
                     <GameProvider>
                         <Routes>
                             <Route path="/" element={<Homepage />} />
-                            <Route path="/game-create" element={<GameCreate />} />
-                            <Route path="/catalogue/:gameId/edit" element={<GameEdit />} />
-                            <Route
-                                path="/catalogue/:gameId/delete"
-                                element={<GameDelete />}
-                            />
-                            <Route path="/logout" element={<Logout />} />
-                            <Route
-                                path="/login"
-                                element={<Login />}
-                            />
                             <Route path="/register" element={<Register />} />
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/logout" element={<Logout />} />
                             <Route path="/catalogue" element={<Catalogue />} />
                             <Route path="/catalogue/:gameId" element={<GameDetails />} />
+
+                            <Route element={<RouteGuard />}>
+                                <Route path="/game-create" element={<GameCreate />} />
+                                <Route path="/catalogue/:gameId/edit" element={<GameEdit />} />
+                                <Route path="/catalogue/:gameId/delete" element={<GameDelete />} />
+                            </Route>
                         </Routes>
                     </GameProvider>
                 </main>
